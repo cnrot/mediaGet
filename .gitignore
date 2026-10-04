@@ -35,6 +35,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# 部署用的环境变量示例模板（不含真实凭据，允许入库）
+!deploy/.env.example
 
 # vercel
 .vercel

@@ -1,0 +1,12 @@
+services:
+  mediaget:
+    image: ${IMAGE:-cnrot/mediaget:latest}
+    container_name: mediaGet
+    restart: unless-stopped
+    init: true
+    ports:
+      - "5269:3000"
+    env_file:
+      - /opt/1panel/apps/openresty/openresty/www/sites/parse.shenzjd.com/index/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

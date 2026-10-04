@@ -73,12 +73,16 @@ npm run test:live
 
 - **Vercel**：仓库导入即用。注意：TikTok 解析依赖 yt-dlp（child_process），Serverless 不可用；`/api/music` 的公共上游对数据中心出口会触发 CF 人机校验，需配置 `MUSIC_API_BASE(S)` 指向可直连的兼容实例（详见 `API.md`）。
 - **Cloudflare Workers**（OpenNext）：`npm run build:cf` 生成 `.open-next/`，`wrangler.toml` 已就绪；敏感 Cookie 在 Worker Settings → Variables and Secrets 配置（CI 已接入自动 `wrangler secret put`）。
-- **Docker**（当前线上正式运行方式）：多阶段 `Dockerfile` 已内置 yt-dlp + ffmpeg（TikTok 解析需要），镜像以非 root 运行：
+- **Docker**（当前线上正式运行方式）：多阶段 `Dockerfile` 已内置 yt-dlp + ffmpeg（TikTok 解析需要），镜像以非 root 运行。镜像由 GitHub Actions（`.github/workflows/deploy-to-docker.yaml`，手动触发）构建并推送到 **Docker Hub**（`docker.io/<用户名>/mediaget:latest`），部署时从 Docker Hub 拉取：
 
 ```bash
-docker build -t mediaget:latest .
-docker run -d -p 3000:3000 --env-file .env mediaget:latest
+# 1. 复制环境变量模板为真实 .env 并填入真实值（部署机器路径）
+cp deploy/.env.example /path/to/.env
+# 2. 用编排文件启动（默认拉取最新镜像；env_file 路径按需修改）
+docker compose -f deploy/docker-compose.yml up -d --pull always
 ```
+
+编排文件与环境变量模板见 `deploy/` 目录；也支持本地 `docker build` 自建镜像后手动 `docker run`。
 
 ## 平台引擎设置（可选，独立路由 + 登录鉴权）
 
