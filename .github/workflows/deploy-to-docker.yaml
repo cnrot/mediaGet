@@ -89,38 +89,38 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
-          script: |
-            IMAGE="ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]'):latest"
-            CONTAINER="${{ github.event.repository.name }}"
-            ENV_FILE="/opt/1panel/apps/openresty/openresty/www/sites/parse.shenzjd.com/index/.env"
-            sudo docker pull "$IMAGE"
-            sudo docker stop "$CONTAINER" || true
-            sudo docker rm "$CONTAINER" || true
-            ENV_FLAGS=""
-            if [ -f "$ENV_FILE" ]; then
-              ENV_FLAGS="--env-file $ENV_FILE"
-            fi
-            # PO Token 提供方为独立工程自建的 bgutil-ytdlp-pot-provider 容器（宿主机端口），
-            # 本部署不创建、不启停、不管理它。应用容器经 host-gateway 访问宿主机端口，
-            # 具体地址在服务器 .env 的 POT_BASE_URL 配置（服务无鉴权，地址禁止写入本公开
-            # 仓库）；未配置时 PO Token 功能自动关闭，插件连不上仅降级，不影响解析主流程。
-            # --init：node 作 PID1 不回收孤儿僵尸进程，累积后会拖垮子进程 spawn
-            sudo docker run -d \
-              --name "$CONTAINER" \
-              --restart unless-stopped \
-              --init \
-              $ENV_FLAGS \
-              -p 5269:3000 \
-              "$IMAGE"
-            sudo docker image prune -f
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - name: Deploy to server
+  #       uses: appleboy/ssh-action@v1
+  #       with:
+  #         host: ${{ secrets.DEPLOY_HOST }}
+  #         username: ${{ secrets.DEPLOY_USER }}
+  #         password: ${{ secrets.DEPLOY_PASSWORD }}
+  #         script: |
+  #           IMAGE="ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]'):latest"
+  #           CONTAINER="${{ github.event.repository.name }}"
+  #           ENV_FILE="/opt/1panel/apps/openresty/openresty/www/sites/parse.shenzjd.com/index/.env"
+  #           sudo docker pull "$IMAGE"
+  #           sudo docker stop "$CONTAINER" || true
+  #           sudo docker rm "$CONTAINER" || true
+  #           ENV_FLAGS=""
+  #           if [ -f "$ENV_FILE" ]; then
+  #             ENV_FLAGS="--env-file $ENV_FILE"
+  #           fi
+  #           # PO Token 提供方为独立工程自建的 bgutil-ytdlp-pot-provider 容器（宿主机端口），
+  #           # 本部署不创建、不启停、不管理它。应用容器经 host-gateway 访问宿主机端口，
+  #           # 具体地址在服务器 .env 的 POT_BASE_URL 配置（服务无鉴权，地址禁止写入本公开
+  #           # 仓库）；未配置时 PO Token 功能自动关闭，插件连不上仅降级，不影响解析主流程。
+  #           # --init：node 作 PID1 不回收孤儿僵尸进程，累积后会拖垮子进程 spawn
+  #           sudo docker run -d \
+  #             --name "$CONTAINER" \
+  #             --restart unless-stopped \
+  #             --init \
+  #             $ENV_FLAGS \
+  #             -p 5269:3000 \
+  #             "$IMAGE"
+  #           sudo docker image prune -f
