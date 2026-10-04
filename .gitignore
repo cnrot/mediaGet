@@ -76,3 +76,4 @@ next-env.d.ts
 # 一次性调试产物（截图 / 探针脚本，用完即弃，不进版本库）
 /tmp-*.png
 /tmp-*.mjs
+CLAUDE.md
